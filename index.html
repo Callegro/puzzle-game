@@ -1,0 +1,191 @@
+<!doctype html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>사진 직소 퍼즐</title><style>
+:root{font-family:system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif;color:#29382f;background:#e8ede5}*{box-sizing:border-box}body{margin:0;overflow:hidden;touch-action:none}button{font:inherit;cursor:pointer;border:none}#app{width:100vw;height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:8px;background:#e8ede5}header{width:min(100%,1300px);display:flex;align-items:center;justify-content:space-between;gap:10px}header strong{font-size:clamp(16px,2vw,24px)}header small{color:#69776c}header .actions{display:flex;gap:7px;align-items:center}.pill{border-radius:30px;background:#fff;padding:9px 15px;color:#334b38;font-weight:650;box-shadow:0 2px 8px #29382f12}.pill.active{background:#c7debf}#counter{font-weight:800;font-size:clamp(16px,2vw,22px);white-space:nowrap}#game{width:min(100%,1300px);height:min(calc(100dvh - 83px),calc(100vw * 660 / 1180));min-height:0;display:block;touch-action:none;border-radius:14px;box-shadow:0 8px 28px #43544223;background:#f4f6ef}#intro{position:fixed;inset:0;background:#566b57ee;z-index:5;display:flex;justify-content:center;align-items:center;text-align:center;padding:20px}#intro .panel{max-width:410px;background:#fffaf2;padding:35px;border-radius:25px;box-shadow:0 10px 45px #0004}#intro h1{font-size:34px;margin:0 0 12px}#intro p{line-height:1.7;color:#627166}#intro button{background:#637e60;color:white;font-weight:750;font-size:20px;padding:16px 35px;border-radius:14px;margin-top:14px}#finish{position:fixed;inset:0;background:#243528a8;z-index:4;display:none;place-items:center;text-align:center}#finish .panel{background:white;padding:30px;border-radius:22px}#finish h2{font-size:30px}#finish button{background:#637e60;color:white;border-radius:14px;padding:12px 25px}#rotate{display:none;position:fixed;inset:0;background:#e8ede5;z-index:10;align-items:center;justify-content:center;text-align:center;padding:30px;font-size:22px}@media(orientation:portrait){#rotate{display:flex}}@media(max-height:490px){header .pill{padding:5px 12px}header strong{font-size:16px}#app{gap:2px}#game{height:min(calc(100dvh - 50px),calc(100vw * 660 / 1180))}}
+
+#levels{display:none;position:fixed;inset:0;background:#566b57ee;z-index:6;align-items:center;justify-content:center;text-align:center;padding:20px}
+#levels .panel{background:#fffaf2;max-width:530px;width:100%;padding:28px;border-radius:24px}
+.level-options{display:flex;gap:12px;justify-content:center;margin-top:18px}
+.level-options button{flex:1;background:#637e60;color:#fff;border-radius:14px;padding:18px 8px;font-weight:bold;font-size:18px}
+.level-options button span{display:block;font-size:13px;opacity:.9;margin-top:6px}
+#missing{display:none;background:#fff3d9;color:#77501d;border:1px solid #d9b776;padding:10px 16px;border-radius:12px;font-size:14px;max-width:96vw}
+@media(max-width:600px){.level-options{gap:6px}.level-options button{padding:14px 4px;font-size:15px}}
+</style></head><body>
+<div id="rotate">📱 아이패드를 가로로 돌려주세요.</div>
+<div id="app"><header><div><strong>🧩 사진 직소 퍼즐</strong> <small id="levelName"> · 쉬움 (4 × 5)</small></div><div class="actions"><span id="counter">0 / 20</span><button id="hint" class="pill">👁 사진 힌트</button><button id="reset" class="pill">↻ 다시 섞기</button><button id="levelsBtn" class="pill">난이도</button></div></header><div id="missing" role="alert"></div><canvas id="game" aria-label="직소 퍼즐 게임"></canvas></div>
+<div id="intro"><div class="panel"><h1>🧩 사진 직소 퍼즐</h1><p>한 장의 사진으로 만드는 직소 퍼즐!<br>난이도를 선택하고 조각을 맞춰보세요.</p><button id="start">게임 시작</button></div></div>
+<div id="levels"><div class="panel"><h1>난이도 선택</h1><div class="level-options"><button data-level="easy">쉬움</button><button data-level="normal">보통</button><button data-level="hard">어려움</button></div></div></div>
+<div id="finish"><div class="panel"><h2>🎉 퍼즐 완성!</h2><p id="finishText">모든 조각을 맞췄어요!</p><button id="again">다시 하기</button> <button id="finishLevels">난이도 선택</button></div></div>
+<script>
+'use strict';
+const LEVELS={easy:{rows:4,cols:5,file:'assets/photo1.png',name:'쉬움'},normal:{rows:5,cols:6,file:'assets/photo2.png',name:'보통'},hard:{rows:6,cols:7,file:'assets/photo3.png',name:'어려움'}};
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const W=1180,H=660,board={x:31,y:113,w:720,h:480},tray={x:788,y:113,w:358,h:480};
+let rows=4,cols=5,pw=144,ph=120,image=new Image(),imageLoaded=false;
+let pieces=[],drag=null,shownHint=false,completed=0,started=false,level='easy';
+let vertical=[],horizontal=[];
+let renderBusy=false;
+const $=id=>document.getElementById(id);
+function randSign(){return Math.random()<.5?-1:1}
+function initEdges(){
+ // 하나의 경계에 부호를 정확히 하나만 부여. 양쪽 조각은 이 공통 경계를 서로 반대 방향으로 따라감.
+ vertical=Array.from({length:rows},()=>Array.from({length:cols-1},randSign));
+ horizontal=Array.from({length:rows-1},()=>Array.from({length:cols},randSign));
+}
+// 모든 접합부는 단 하나의 정방향 베지어 곡선으로 정의하고,
+// 반대쪽 조각은 같은 곡선을 역순으로 추적한다. 굴곡이 100% 일치한다.
+function edge(path,sx,sy,ex,ey,sign,reverse=false){
+ const dx=ex-sx,dy=ey-sy,L=Math.hypot(dx,dy);
+ const start=reverse?[ex,ey]:[sx,sy];
+ if(!sign){path.lineTo(reverse?sx:ex,reverse?sy:ey);return;}
+ const nx=dy/L,ny=-dx/L;
+ const h=Math.min(pw,ph)*.19*sign;
+ const pt=(t,d)=>[sx+dx*t+nx*d,sy+dy*t+ny*d];
+ // segment data: [start, control1, control2, end], normalized canonical coordinates
+ const seg=[
+  [[0,0],[.12,0],[.24,0],[.32,0]],
+  [[.32,0],[.41,0],[.39,h*.32],[.37,h*.42]],
+  [[.37,h*.42],[.25,h*1.22],[.40,h*1.25],[.50,h*1.25]],
+  [[.50,h*1.25],[.60,h*1.25],[.75,h*1.22],[.63,h*.42]],
+  [[.63,h*.42],[.61,h*.32],[.59,0],[.68,0]],
+  [[.68,0],[.77,0],[.88,0],[1,0]],
+ ];
+ if(!reverse){
+  for(const v of seg){path.bezierCurveTo(...pt(...v[1]),...pt(...v[2]),...pt(...v[3]));}
+ }else{
+  for(let i=seg.length-1;i>=0;i--){const v=seg[i];path.bezierCurveTo(...pt(...v[2]),...pt(...v[1]),...pt(...v[0]));}
+ }
+}
+function pathFor(r,c){
+ const p=new Path2D();p.moveTo(0,0);
+ edge(p,0,0,pw,0,r===0?0:horizontal[r-1][c]);
+ edge(p,pw,0,pw,ph,c===cols-1?0:vertical[r][c]);
+ edge(p,0,ph,pw,ph,r===rows-1?0:horizontal[r][c],true);
+ edge(p,0,0,0,ph,c===0?0:vertical[r][c-1],true);
+ p.closePath();return p;
+}
+function updateCounter(){$('counter').textContent=completed+' / '+rows*cols}
+function shuffle(){
+ if(!imageLoaded)return;
+ completed=0;drag=null;$('finish').style.display='none';
+ initEdges();
+ const count=rows*cols,order=Array.from({length:count},(_,i)=>i);
+ for(let i=count-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
+ // 보관함의 크기에 맞춰 난이도별로 초기 조각을 축소해 배열.
+ const trayCols=cols===5?4:cols===6?5:6;
+ const trayRows=Math.ceil(count/trayCols);
+ const cellW=(tray.w-30)/trayCols,cellH=(tray.h-35)/trayRows;
+ const miniScale=Math.min(.48,(cellW-14)/pw,(cellH-14)/ph);
+ pieces=[];
+ for(let k=0;k<count;k++){
+  const i=order[k],r=Math.floor(i/cols),c=i%cols;
+  const tc=k%trayCols,tr=Math.floor(k/trayCols);
+  pieces.push({r,c,path:pathFor(r,c),x:tray.x+16+tc*cellW+(cellW-pw*miniScale)/2,y:tray.y+15+tr*cellH+(cellH-ph*miniScale)/2,scale:miniScale,restScale:miniScale,locked:false});
+ }
+ updateCounter();draw();
+}
+function setup(){const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(1,0,0,1,0,0);draw()}
+function roundRect(x,y,w,h,rad,fill){ctx.beginPath();ctx.roundRect(x,y,w,h,rad);ctx.fillStyle=fill;ctx.fill()}
+function drawPiece(p){
+ ctx.save();ctx.translate(p.x,p.y);ctx.scale(p.scale,p.scale);
+ ctx.shadowColor=p.locked?'#15231522':'#1b2b2370';ctx.shadowBlur=p.locked?1:9;ctx.shadowOffsetY=p.locked?0:3;
+ ctx.fillStyle='#fff';ctx.fill(p.path);ctx.shadowColor='transparent';ctx.shadowOffsetY=0;ctx.shadowBlur=0;
+ ctx.save();ctx.clip(p.path);
+ // 바깥쪽 요철도 원본 이미지의 정확한 이웃 픽셀을 사용한다.
+ if(imageLoaded)ctx.drawImage(image,-p.c*pw,-p.r*ph,board.w,board.h);
+ ctx.restore();ctx.strokeStyle=p.locked?'#d7e6da':'#fdfdfd';ctx.lineWidth=p.locked?1:2.4;ctx.stroke(p.path);
+ ctx.restore();
+}
+function draw(){
+ if(renderBusy)return;
+ renderBusy=true;
+ try{
+  // 매 프레임 캔버스를 완전히 초기화. 그림 데이터와 게임 UI는 분리.
+  ctx.save();ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#f6f7f0';ctx.fillRect(0,0,W,H);
+  roundRect(15,18,750,620,18,'#e1e9dc');
+  roundRect(776,18,389,620,18,'#eee7d8');
+  ctx.font='bold 21px system-ui';ctx.fillStyle='#3c5944';ctx.fillText('퍼즐 완성판',32,55);
+
+  ctx.fillStyle='#655540';ctx.font='bold 21px system-ui';ctx.fillText('퍼즐 조각',790,55);
+
+  roundRect(tray.x,tray.y,tray.w,tray.h,12,'#dfd4bd');
+  // 퍼즐판은 반드시 독립적인 클리핑 공간에서 한 번만 그림.
+  ctx.save();ctx.beginPath();ctx.rect(board.x,board.y,board.w,board.h);ctx.clip();
+  ctx.fillStyle='#f9faf7';ctx.fillRect(board.x,board.y,board.w,board.h);
+  if(imageLoaded){
+   ctx.save();ctx.globalAlpha=shownHint?.28:.075;
+   ctx.drawImage(image,board.x,board.y,board.w,board.h);ctx.restore();
+  }
+  // 격자: 서로 공유하는 경계를 정확히 1회만 그림.
+  ctx.strokeStyle='#84978b99';ctx.lineWidth=1.2;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols-1;c++){
+   ctx.beginPath();ctx.moveTo(board.x+(c+1)*pw,board.y+r*ph);
+   edge(ctx,board.x+(c+1)*pw,board.y+r*ph,board.x+(c+1)*pw,board.y+(r+1)*ph,vertical[r][c]);ctx.stroke();
+  }
+  for(let r=0;r<rows-1;r++)for(let c=0;c<cols;c++){
+   ctx.beginPath();ctx.moveTo(board.x+c*pw,board.y+(r+1)*ph);
+   edge(ctx,board.x+c*pw,board.y+(r+1)*ph,board.x+(c+1)*pw,board.y+(r+1)*ph,horizontal[r][c]);ctx.stroke();
+  }
+  ctx.restore();
+  ctx.strokeStyle='#8ba28e';ctx.lineWidth=3;ctx.strokeRect(board.x,board.y,board.w,board.h);
+  // 완성한 조각을 먼저, 나머지 조각을 그 위에 그린다.
+  for(const p of pieces)if(p.locked)drawPiece(p);
+  for(const p of pieces)if(!p.locked&&(!drag||drag.p!==p))drawPiece(p);
+  if(drag)drawPiece(drag.p);
+
+  ctx.restore();
+ }finally{renderBusy=false}
+}
+function coords(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
+canvas.addEventListener('pointerdown',e=>{
+ if(!started||!imageLoaded)return;
+ const q=coords(e);
+ for(let k=pieces.length-1;k>=0;k--){
+  const p=pieces[k];if(p.locked)continue;
+  const lx=(q.x-p.x)/p.scale,ly=(q.y-p.y)/p.scale;
+  if(ctx.isPointInPath(p.path,lx,ly)){
+   // 집어든 동안만 1배로 확대한다. 손을 놓으면 원래 축소 크기로 돌아간다.
+   const cx=lx,cy=ly;
+   drag={p,id:e.pointerId,offX:cx,offY:cy};
+   p.scale=1;p.x=q.x-cx;p.y=q.y-cy;
+   pieces.splice(k,1);pieces.push(p);
+   canvas.setPointerCapture(e.pointerId);e.preventDefault();draw();break;
+  }
+ }
+});
+canvas.addEventListener('pointermove',e=>{
+ if(!drag||drag.id!==e.pointerId)return;
+ const q=coords(e);drag.p.x=q.x-drag.offX;drag.p.y=q.y-drag.offY;draw();e.preventDefault();
+});
+function release(e){
+ if(!drag||drag.id!==e.pointerId)return;
+ const {p}=drag,tx=board.x+p.c*pw,ty=board.y+p.r*ph;
+ // 올바른 위치에서만 고정하고, 그 외에는 현재 위치에 축소해서 둔다.
+ if(e.type!=='pointercancel'&&Math.hypot(p.x-tx,p.y-ty)<Math.min(65,pw*.5)){
+  p.x=tx;p.y=ty;p.scale=1;p.locked=true;completed++;updateCounter();
+  if(completed===rows*cols)$('finish').style.display='grid';
+ }else{
+  const mx=p.x+pw/2,my=p.y+ph/2;
+  p.scale=p.restScale;
+  p.x=mx-pw*p.scale/2;p.y=my-ph*p.scale/2;
+ }
+ drag=null;draw();e.preventDefault();
+}
+canvas.addEventListener('pointerup',release);
+canvas.addEventListener('pointercancel',release);
+function selectLevel(next){
+ level=next;const cfg=LEVELS[level];rows=cfg.rows;cols=cfg.cols;pw=board.w/cols;ph=board.h/rows;
+ started=true;imageLoaded=false;pieces=[];completed=0;drag=null;shownHint=false;
+ $('hint').classList.remove('active');$('levelName').textContent=` · ${cfg.name} (${rows} × ${cols})`;
+ $('missing').style.display='none';$('levels').style.display='none';$('intro').style.display='none';updateCounter();
+ image=new Image();image.onload=()=>{imageLoaded=true;shuffle()};
+ image.onerror=()=>{$('missing').textContent=`사진을 불러오지 못했어요: ${cfg.file} — HTML과 같은 위치에 assets 폴더를 만들고 해당 파일을 넣어주세요.`;$('missing').style.display='block';draw()};
+ image.src=cfg.file;draw();
+}
+function openLevels(){$('finish').style.display='none';$('levels').style.display='flex'}
+$('start').onclick=openLevels;$('levelsBtn').onclick=openLevels;
+document.querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>selectLevel(b.dataset.level));
+$('hint').onclick=()=>{shownHint=!shownHint;$('hint').classList.toggle('active',shownHint);draw()};
+$('reset').onclick=shuffle;$('again').onclick=shuffle;$('finishLevels').onclick=openLevels;
+window.addEventListener('resize',setup);initEdges();setup();
+</script></body></html>
