@@ -1,28 +1,160 @@
 <!doctype html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>사진 직소 퍼즐</title><style>
-:root{font-family:system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif;color:#29382f;background:#e8ede5}*{box-sizing:border-box}body{margin:0;overflow:hidden;touch-action:none}button{font:inherit;cursor:pointer;border:none}#app{width:100vw;height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:8px;background:#e8ede5}header{width:min(100%,1300px);display:flex;align-items:center;justify-content:space-between;gap:10px}header strong{font-size:clamp(16px,2vw,24px)}header small{color:#69776c}header .actions{display:flex;gap:7px;align-items:center}.pill{border-radius:30px;background:#fff;padding:9px 15px;color:#334b38;font-weight:650;box-shadow:0 2px 8px #29382f12}.pill.active{background:#c7debf}#counter{font-weight:800;font-size:clamp(16px,2vw,22px);white-space:nowrap}#game{width:min(100%,1300px);height:min(calc(100dvh - 83px),calc(100vw * 660 / 1180));min-height:0;display:block;touch-action:none;border-radius:14px;box-shadow:0 8px 28px #43544223;background:#f4f6ef}#intro{position:fixed;inset:0;background:#566b57ee;z-index:5;display:flex;justify-content:center;align-items:center;text-align:center;padding:20px}#intro .panel{max-width:410px;background:#fffaf2;padding:35px;border-radius:25px;box-shadow:0 10px 45px #0004}#intro h1{font-size:34px;margin:0 0 12px}#intro p{line-height:1.7;color:#627166}#intro button{background:#637e60;color:white;font-weight:750;font-size:20px;padding:16px 35px;border-radius:14px;margin-top:14px}#finish{position:fixed;inset:0;background:#243528a8;z-index:4;display:none;place-items:center;text-align:center}#finish .panel{background:white;padding:30px;border-radius:22px}#finish h2{font-size:30px}#finish button{background:#637e60;color:white;border-radius:14px;padding:12px 25px}#rotate{display:none;position:fixed;inset:0;background:#e8ede5;z-index:10;align-items:center;justify-content:center;text-align:center;padding:30px;font-size:22px}@media(orientation:portrait){#rotate{display:flex}}@media(max-height:490px){header .pill{padding:5px 12px}header strong{font-size:16px}#app{gap:2px}#game{height:min(calc(100dvh - 50px),calc(100vw * 660 / 1180))}}
+:root{font-family:system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif;color:#29382f;background:#e8ede5}*{box-sizing:border-box}body{margin:0;overflow:hidden;touch-action:none}button{font:inherit;cursor:pointer;border:none}#app{width:100vw;height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:8px;background:#e8ede5}header{width:min(100%,1300px);display:flex;align-items:center;justify-content:space-between;gap:10px}header strong{font-size:clamp(16px,2vw,24px)}header small{color:#69776c}header .actions{display:flex;gap:7px;align-items:center}.pill{border-radius:30px;background:#fff;padding:9px 15px;color:#334b38;font-weight:650;box-shadow:0 2px 8px #29382f12}.pill.active{background:#c7debf}#counter{font-weight:800;font-size:clamp(16px,2vw,22px);white-space:nowrap}#game{width:min(100%,1300px);height:min(calc(100dvh - 83px),calc(100vw * 660 / 1180));min-height:0;display:block;touch-action:none;border-radius:14px;box-shadow:0 8px 28px #43544223;background:#f4f6ef}#intro{position:fixed;inset:0;background:#566b57ee;z-index:5;display:flex;justify-content:center;align-items:center;text-align:center;padding:20px}#intro .panel{max-width:410px;background:#fffaf2;padding:35px;border-radius:25px;box-shadow:0 10px 45px #0004}#intro h1{font-size:34px;margin:0 0 12px}#intro p{line-height:1.7;color:#627166}#intro button{background:#637e60;color:white;font-weight:750;font-size:20px;padding:16px 35px;border-radius:14px;margin-top:14px}#rotate{display:none;position:fixed;inset:0;background:#e8ede5;z-index:10;align-items:center;justify-content:center;text-align:center;padding:30px;font-size:22px}@media(orientation:portrait){#rotate{display:flex}}@media(max-height:490px){header .pill{padding:5px 12px}header strong{font-size:16px}#app{gap:2px}#game{height:min(calc(100dvh - 50px),calc(100vw * 660 / 1180))}}
 
-#levels{display:none;position:fixed;inset:0;background:#566b57ee;z-index:6;align-items:center;justify-content:center;text-align:center;padding:20px}
+#families{display:none;position:fixed;inset:0;background:#566b57ee;z-index:6;align-items:center;justify-content:center;text-align:center;padding:20px}
+#families .panel{background:#fffaf2;max-width:590px;width:100%;padding:28px;border-radius:24px}
+.family-options{display:flex;gap:12px;justify-content:center;margin-top:18px}
+.family-options button{flex:1;min-width:0;position:relative;background:none;border:0;padding:0;color:#fff;aspect-ratio:1.18;display:flex;align-items:center;justify-content:center;transition:transform .18s ease;touch-action:manipulation}
+.family-options button:active{transform:scale(.94)}.family-options button:focus-visible{outline:3px solid #e7aa48;outline-offset:4px;border-radius:12px}
+.family-options svg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 5px 4px #243b2a27)}
+.family-options .house-name{font-size:19px;font-weight:850;fill:#fff;paint-order:stroke;stroke:#395b45;stroke-width:.5px}
+#levels{display:none;position:fixed;inset:0;background:#566b57ee;z-index:7;align-items:center;justify-content:center;text-align:center;padding:20px}
 #levels .panel{background:#fffaf2;max-width:530px;width:100%;padding:28px;border-radius:24px}
 .level-options{display:flex;gap:12px;justify-content:center;margin-top:18px}
-.level-options button{flex:1;background:#637e60;color:#fff;border-radius:14px;padding:18px 8px;font-weight:bold;font-size:18px}
-.level-options button span{display:block;font-size:13px;opacity:.9;margin-top:6px}
+.level-options button{flex:1;min-width:0;background:#637e60;color:#fff;border-radius:14px;padding:21px 8px;font-weight:bold;font-size:20px;touch-action:manipulation}
+.level-options button span{display:block;font-size:14px;opacity:.95;margin-top:9px;line-height:1.35;font-weight:550}
 #missing{display:none;background:#fff3d9;color:#77501d;border:1px solid #d9b776;padding:10px 16px;border-radius:12px;font-size:14px;max-width:96vw}
-@media(max-width:600px){.level-options{gap:6px}.level-options button{padding:14px 4px;font-size:15px}}
+@media(max-width:600px){.level-options,.family-options{gap:6px}.level-options button{padding:14px 4px;font-size:15px}.level-options button span{font-size:11px}.family-options .house-name{font-size:17px}}
 </style></head><body>
 <div id="rotate">📱 아이패드를 가로로 돌려주세요.</div>
-<div id="app"><header><div><strong>🧩 사진 직소 퍼즐</strong> <small id="levelName"> · 쉬움 (4 × 5)</small></div><div class="actions"><span id="counter">0 / 20</span><button id="hint" class="pill">👁 사진 힌트</button><button id="reset" class="pill">↻ 다시 섞기</button><button id="levelsBtn" class="pill">난이도</button></div></header><div id="missing" role="alert"></div><canvas id="game" aria-label="직소 퍼즐 게임"></canvas></div>
+<div id="app"><header><div><strong>🧩 사진 직소 퍼즐</strong></div><div class="actions"><span id="counter">0 / 9</span><button id="hint" class="pill">👁 사진 힌트</button><button id="reset" class="pill">↻ 다시 섞기</button><button id="levelsBtn" class="pill">난이도</button></div></header><div id="missing" role="alert"></div><canvas id="game" aria-label="직소 퍼즐 게임"></canvas></div>
 <div id="intro"><div class="panel"><h1>🧩 사진 직소 퍼즐</h1><p>한 장의 사진으로 만드는 직소 퍼즐!<br>난이도를 선택하고 조각을 맞춰보세요.</p><button id="start">게임 시작</button></div></div>
-<div id="levels"><div class="panel"><h1>난이도 선택</h1><div class="level-options"><button data-level="easy">쉬움</button><button data-level="normal">보통</button><button data-level="hard">어려움</button></div></div></div>
-<div id="finish"><div class="panel"><h2>🎉 퍼즐 완성!</h2><p id="finishText">모든 조각을 맞췄어요!</p><button id="again">다시 하기</button> <button id="finishLevels">난이도 선택</button></div></div>
+<div id="families"><div class="panel"><h1>가족을 선택해요</h1><div class="family-options"><button type="button" data-family="narin" aria-label="나린이네 가족 선택"><svg viewBox="0 0 180 160" aria-hidden="true" focusable="false"><path d="M12 73 L90 12 L168 73 L156 88 L149 82 L149 148 Q149 154 143 154 H37 Q31 154 31 148 V82 L24 88 Z" fill="#7AAB88" stroke="#496D53" stroke-width="5" stroke-linejoin="round"/><path d="M12 73 L90 12 L168 73" fill="none" stroke="#496D53" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M39 86 H141 V139 H39Z" fill="#ffffff" fill-opacity=".11" rx="7"/><text class="house-name" x="90" y="119" text-anchor="middle">나린이네</text></svg></button><button type="button" data-family="seungeun" aria-label="승은이네 가족 선택"><svg viewBox="0 0 180 160" aria-hidden="true" focusable="false"><path d="M12 73 L90 12 L168 73 L156 88 L149 82 L149 148 Q149 154 143 154 H37 Q31 154 31 148 V82 L24 88 Z" fill="#D69C76" stroke="#996647" stroke-width="5" stroke-linejoin="round"/><path d="M12 73 L90 12 L168 73" fill="none" stroke="#996647" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M39 86 H141 V139 H39Z" fill="#ffffff" fill-opacity=".11" rx="7"/><text class="house-name" x="90" y="119" text-anchor="middle">승은이네</text></svg></button><button type="button" data-family="yunji" aria-label="윤지네 가족 선택"><svg viewBox="0 0 180 160" aria-hidden="true" focusable="false"><path d="M12 73 L90 12 L168 73 L156 88 L149 82 L149 148 Q149 154 143 154 H37 Q31 154 31 148 V82 L24 88 Z" fill="#9A9BCB" stroke="#676C9E" stroke-width="5" stroke-linejoin="round"/><path d="M12 73 L90 12 L168 73" fill="none" stroke="#676C9E" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M39 86 H141 V139 H39Z" fill="#ffffff" fill-opacity=".11" rx="7"/><text class="house-name" x="90" y="119" text-anchor="middle">윤지네</text></svg></button></div></div></div>
+<div id="levels"><div class="panel"><h1>난이도 선택</h1><div class="level-options"><button data-level="easy">쉬워요<span>왕 큰 조각 모험</span></button><button data-level="normal">재밌어요<span>조금더 조각조각</span></button><button data-level="hard">어려워요<span>도전! 퍼즐 박사</span></button></div></div></div>
+
 <script>
 'use strict';
-const LEVELS={easy:{rows:4,cols:5,file:'assets/photo1.png',name:'쉬움'},normal:{rows:5,cols:6,file:'assets/photo2.png',name:'보통'},hard:{rows:6,cols:7,file:'assets/photo3.png',name:'어려움'}};
+const LEVELS={easy:{rows:3,cols:3,name:'쉬움'},normal:{rows:4,cols:4,name:'보통'},hard:{rows:5,cols:5,name:'어려움'}};
+const FAMILIES={narin:{name:'나린이네 가족',file:'assets/photo1.png'},seungeun:{name:'승은이네 가족',file:'assets/photo2.png'},yunji:{name:'윤지네 가족',file:'assets/photo3.png'}};
+let selectedFamily=null;
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const W=1180,H=660,board={x:31,y:113,w:720,h:480},tray={x:788,y:113,w:358,h:480};
-let rows=4,cols=5,pw=144,ph=120,image=new Image(),imageLoaded=false;
+let rows=3,cols=3,pw=240,ph=160,image=new Image(),imageLoaded=false;
+let imageRequestId=0;
 let pieces=[],drag=null,shownHint=false,completed=0,started=false,level='easy';
 let vertical=[],horizontal=[];
 let renderBusy=false;
+let finished=false,celebrationStart=0,confetti=[],celebrationFrame=0,celebrationVersion=0;
+const restartButton={x:826,y:387,w:282,h:65};
+const chooseButton={x:826,y:470,w:282,h:65};
+function isInside(q,b){return q.x>=b.x&&q.x<=b.x+b.w&&q.y>=b.y&&q.y<=b.y+b.h;}
+// Always invalidate animation frames from the previous round before resetting state.
+let fireworks=[];
+function stopCelebration(){
+ celebrationVersion++;
+ if(celebrationFrame)cancelAnimationFrame(celebrationFrame);
+ celebrationFrame=0;
+ celebrationStart=0;
+ confetti=[];
+ fireworks=[];
+ finished=false;
+}
+// Larger, brighter celebration with staggered fireworks and confetti.
+const PARTY_DURATION=4600;
+function celebrate(){
+ // Fresh timeline and particles on EVERY win, even after restart or difficulty change.
+ stopCelebration();
+ const version=celebrationVersion;
+ finished=true;celebrationStart=performance.now();
+ const colors=['#ffce44','#ff6e85','#62d9bf','#66b4ff','#b68cff','#ff954c','#fdfcdb'];
+ // Eight large bursts from several positions; stagger their timing so the effect keeps going.
+ const centers=[
+  [160,140,0],[605,105,170],[1020,142,330],
+  [340,300,660],[855,245,850],[560,385,1200],
+  [148,400,1550],[1040,420,1950],[570,170,2500]
+ ];
+ centers.forEach(([x,y,delay],k)=>{
+  const rays=[];
+  for(let i=0;i<42;i++){
+   const angle=(i/42)*Math.PI*2+(Math.random()-.5)*.09;
+   rays.push({angle,speed:105+Math.random()*125,size:5+Math.random()*7,
+    color:colors[(i+k)%colors.length],star:i%6===0});
+  }
+  fireworks.push({x,y,delay,rays});
+ });
+ // Large pieces of paper fall from the top and burst in from both edges.
+ for(let i=0;i<360;i++){
+  const side=i%3,delay=Math.random()*1750;
+  let x,y,vx,vy;
+  if(side===0){x=Math.random()*W;y=-30-Math.random()*85;vx=(Math.random()-.5)*120;vy=100+Math.random()*130;}
+  else if(side===1){x=-22;y=80+Math.random()*440;vx=110+Math.random()*190;vy=-115+Math.random()*190;}
+  else{x=W+22;y=80+Math.random()*440;vx=-(110+Math.random()*190);vy=-115+Math.random()*190;}
+  confetti.push({x,y,vx,vy,size:7+Math.random()*10,spin:Math.random()*6.28,
+   rotate:(Math.random()-.5)*13,delay,color:colors[i%colors.length],star:i%11===0});
+ }
+ const animate=()=>{
+  // Ignore callbacks belonging to a past puzzle completion.
+  if(version!==celebrationVersion||!finished)return;
+  draw();
+  if(performance.now()-celebrationStart<PARTY_DURATION){
+   celebrationFrame=requestAnimationFrame(animate);
+  }else{
+   celebrationFrame=0;confetti=[];fireworks=[];draw();
+  }
+ };
+ celebrationFrame=requestAnimationFrame(animate);
+}
+function drawFinishPanel(){
+ ctx.save();
+ roundRect(tray.x,tray.y,tray.w,tray.h,16,'#f5ead0');
+ ctx.textAlign='center';
+ ctx.fillStyle='#48684e';ctx.font='bold 43px system-ui';ctx.fillText('🎉',tray.x+tray.w/2,230);
+ ctx.font='bold 32px system-ui';ctx.fillText('퍼즐 완성!',tray.x+tray.w/2,285);
+ ctx.font='18px system-ui';ctx.fillStyle='#786c58';ctx.fillText('모든 조각을 맞췄어요!',tray.x+tray.w/2,324);
+ for(const [b,label] of [[restartButton,'↻  다시 하기'],[chooseButton,'가족 고르기']]){
+  roundRect(b.x,b.y,b.w,b.h,16,'#637e60');
+  ctx.fillStyle='#fff';ctx.font='bold 23px system-ui';ctx.fillText(label,b.x+b.w/2,b.y+42);
+ }
+ ctx.restore();
+}
+function drawStar(x,y,outer,inner,points=5){
+ ctx.beginPath();
+ for(let i=0;i<points*2;i++){
+  const angle=i*Math.PI/points-Math.PI/2;
+  const r=i%2===0?outer:inner;
+  const px=x+Math.cos(angle)*r,py=y+Math.sin(angle)*r;
+  if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+ }
+ ctx.closePath();ctx.fill();
+}
+function drawCelebration(){
+ const elapsed=performance.now()-celebrationStart;
+ ctx.save();
+ // Large radial firework blooms with bright glowing cores and moving streaks.
+ for(const burst of fireworks){
+  const t=(elapsed-burst.delay)/1000;
+  if(t<0||t>1.45)continue;
+  const progress=Math.min(1,t/.95);
+  const fade=Math.min(1,t*5)*Math.max(0,1-t/1.45);
+  ctx.save();ctx.globalAlpha=fade;
+  for(const r of burst.rays){
+   const ux=Math.cos(r.angle),uy=Math.sin(r.angle);
+   const radius=r.speed*progress;
+   const x=burst.x+ux*radius;
+   const y=burst.y+uy*radius+32*t*t;
+   ctx.strokeStyle=r.color;ctx.lineWidth=r.size*.44;ctx.lineCap='round';
+   ctx.shadowColor=r.color;ctx.shadowBlur=11;
+   ctx.beginPath();ctx.moveTo(x-ux*(15+14*progress),y-uy*(15+14*progress));ctx.lineTo(x,y);ctx.stroke();
+   if(r.star){ctx.fillStyle=r.color;drawStar(x,y,r.size*1.15,r.size*.48);}
+  }
+  ctx.shadowBlur=0;
+  if(t<.32){ctx.globalAlpha=(1-t/.32)*.85;ctx.fillStyle='#fff7d6';
+   ctx.beginPath();ctx.arc(burst.x,burst.y,12+40*t,0,Math.PI*2);ctx.fill();}
+  ctx.restore();
+ }
+ // Floating confetti passes over the finished image temporarily, then clears entirely.
+ for(const f of confetti){
+  const t=(elapsed-f.delay)/1000;if(t<0||t>2.7)continue;
+  ctx.globalAlpha=Math.max(0,Math.min(1,t*7, (2.7-t)/.65));
+  const x=f.x+f.vx*t,y=f.y+f.vy*t+95*t*t;
+  ctx.save();ctx.translate(x,y);ctx.rotate(f.spin+f.rotate*t);
+  ctx.fillStyle=f.color;
+  if(f.star)drawStar(0,0,f.size*1.1,f.size*.45);
+  else ctx.fillRect(-f.size/2,-f.size/2,f.size,f.size*.7);
+  ctx.restore();
+ }
+ ctx.restore();
+}
 const $=id=>document.getElementById(id);
 function randSign(){return Math.random()<.5?-1:1}
 function initEdges(){
@@ -64,13 +196,14 @@ function pathFor(r,c){
 }
 function updateCounter(){$('counter').textContent=completed+' / '+rows*cols}
 function shuffle(){
+ stopCelebration();
  if(!imageLoaded)return;
- completed=0;drag=null;$('finish').style.display='none';
+ completed=0;drag=null;
  initEdges();
  const count=rows*cols,order=Array.from({length:count},(_,i)=>i);
  for(let i=count-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
  // 보관함의 크기에 맞춰 난이도별로 초기 조각을 축소해 배열.
- const trayCols=cols===5?4:cols===6?5:6;
+ const trayCols=cols;
  const trayRows=Math.ceil(count/trayCols);
  const cellW=(tray.w-30)/trayCols,cellH=(tray.h-35)/trayRows;
  const miniScale=Math.min(.48,(cellW-14)/pw,(cellH-14)/ph);
@@ -104,19 +237,21 @@ function draw(){
   ctx.fillStyle='#f6f7f0';ctx.fillRect(0,0,W,H);
   roundRect(15,18,750,620,18,'#e1e9dc');
   roundRect(776,18,389,620,18,'#eee7d8');
-  ctx.font='bold 21px system-ui';ctx.fillStyle='#3c5944';ctx.fillText('퍼즐 완성판',32,55);
+  ctx.font='bold 21px system-ui';ctx.fillStyle='#3c5944';ctx.fillText('퍼즐판',32,55);
 
-  ctx.fillStyle='#655540';ctx.font='bold 21px system-ui';ctx.fillText('퍼즐 조각',790,55);
+  ctx.fillStyle='#655540';ctx.font='bold 21px system-ui';ctx.fillText(finished?'축하해요!':'퍼즐 조각',790,55);
 
-  roundRect(tray.x,tray.y,tray.w,tray.h,12,'#dfd4bd');
+  if(finished)drawFinishPanel();
+  else roundRect(tray.x,tray.y,tray.w,tray.h,12,'#dfd4bd');
   // 퍼즐판은 반드시 독립적인 클리핑 공간에서 한 번만 그림.
   ctx.save();ctx.beginPath();ctx.rect(board.x,board.y,board.w,board.h);ctx.clip();
   ctx.fillStyle='#f9faf7';ctx.fillRect(board.x,board.y,board.w,board.h);
   if(imageLoaded){
-   ctx.save();ctx.globalAlpha=shownHint?.28:.075;
+   ctx.save();ctx.globalAlpha=finished?1:(shownHint?.28:.075);
    ctx.drawImage(image,board.x,board.y,board.w,board.h);ctx.restore();
   }
   // 격자: 서로 공유하는 경계를 정확히 1회만 그림.
+  if(!finished){
   ctx.strokeStyle='#84978b99';ctx.lineWidth=1.2;
   for(let r=0;r<rows;r++)for(let c=0;c<cols-1;c++){
    ctx.beginPath();ctx.moveTo(board.x+(c+1)*pw,board.y+r*ph);
@@ -126,12 +261,15 @@ function draw(){
    ctx.beginPath();ctx.moveTo(board.x+c*pw,board.y+(r+1)*ph);
    edge(ctx,board.x+c*pw,board.y+(r+1)*ph,board.x+(c+1)*pw,board.y+(r+1)*ph,horizontal[r][c]);ctx.stroke();
   }
+  }
   ctx.restore();
   ctx.strokeStyle='#8ba28e';ctx.lineWidth=3;ctx.strokeRect(board.x,board.y,board.w,board.h);
   // 완성한 조각을 먼저, 나머지 조각을 그 위에 그린다.
-  for(const p of pieces)if(p.locked)drawPiece(p);
-  for(const p of pieces)if(!p.locked&&(!drag||drag.p!==p))drawPiece(p);
-  if(drag)drawPiece(drag.p);
+  if(!finished){
+   for(const p of pieces)if(p.locked)drawPiece(p);
+   for(const p of pieces)if(!p.locked&&(!drag||drag.p!==p))drawPiece(p);
+   if(drag)drawPiece(drag.p);
+  }else{drawCelebration();}
 
   ctx.restore();
  }finally{renderBusy=false}
@@ -140,6 +278,11 @@ function coords(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.
 canvas.addEventListener('pointerdown',e=>{
  if(!started||!imageLoaded)return;
  const q=coords(e);
+ if(finished){
+  if(isInside(q,restartButton))shuffle();
+  else if(isInside(q,chooseButton))openFamilies();
+  e.preventDefault();return;
+ }
  for(let k=pieces.length-1;k>=0;k--){
   const p=pieces[k];if(p.locked)continue;
   const lx=(q.x-p.x)/p.scale,ly=(q.y-p.y)/p.scale;
@@ -163,7 +306,7 @@ function release(e){
  // 올바른 위치에서만 고정하고, 그 외에는 현재 위치에 축소해서 둔다.
  if(e.type!=='pointercancel'&&Math.hypot(p.x-tx,p.y-ty)<Math.min(65,pw*.5)){
   p.x=tx;p.y=ty;p.scale=1;p.locked=true;completed++;updateCounter();
-  if(completed===rows*cols)$('finish').style.display='grid';
+  if(completed===rows*cols)celebrate();
  }else{
   const mx=p.x+pw/2,my=p.y+ph/2;
   p.scale=p.restScale;
@@ -174,18 +317,58 @@ function release(e){
 canvas.addEventListener('pointerup',release);
 canvas.addEventListener('pointercancel',release);
 function selectLevel(next){
- level=next;const cfg=LEVELS[level];rows=cfg.rows;cols=cfg.cols;pw=board.w/cols;ph=board.h/rows;
- started=true;imageLoaded=false;pieces=[];completed=0;drag=null;shownHint=false;
- $('hint').classList.remove('active');$('levelName').textContent=` · ${cfg.name} (${rows} × ${cols})`;
- $('missing').style.display='none';$('levels').style.display='none';$('intro').style.display='none';updateCounter();
- image=new Image();image.onload=()=>{imageLoaded=true;shuffle()};
- image.onerror=()=>{$('missing').textContent=`사진을 불러오지 못했어요: ${cfg.file} — HTML과 같은 위치에 assets 폴더를 만들고 해당 파일을 넣어주세요.`;$('missing').style.display='block';draw()};
- image.src=cfg.file;draw();
+ const cfg=LEVELS[next];
+ const family=FAMILIES[selectedFamily];
+ if(!cfg||!family)return;
+ // Ignore callbacks from an earlier level if the player changes levels while an image loads.
+ const requestId=++imageRequestId;
+ level=next;rows=cfg.rows;cols=cfg.cols;pw=board.w/cols;ph=board.h/rows;
+ stopCelebration();started=true;imageLoaded=false;pieces=[];completed=0;drag=null;shownHint=false;
+ // Build the edge arrays for the NEW grid before any draw can read them.
+ initEdges();
+ $('hint').classList.remove('active');
+ $('missing').style.display='none';$('levels').style.display='none';$('families').style.display='none';$('intro').style.display='none';
+ updateCounter();
+ const nextImage=new Image();image=nextImage;
+ nextImage.onload=()=>{
+  if(requestId!==imageRequestId)return;
+  imageLoaded=true;shuffle();
+ };
+ nextImage.onerror=()=>{
+  if(requestId!==imageRequestId)return;
+  imageLoaded=false;
+  $('missing').textContent=`사진을 불러오지 못했어요: ${family.file} — HTML과 같은 위치에 assets 폴더를 만들고 해당 파일을 넣어주세요.`;
+  $('missing').style.display='block';draw();
+ };
+ nextImage.src=family.file;
+ draw();
 }
-function openLevels(){$('finish').style.display='none';$('levels').style.display='flex'}
-$('start').onclick=openLevels;$('levelsBtn').onclick=openLevels;
+function cancelCurrentRound(){
+ // Invalidate pending image requests and any fireworks RAF before switching screens.
+ imageRequestId++;
+ stopCelebration();
+ if(drag){try{if(canvas.hasPointerCapture(drag.id))canvas.releasePointerCapture(drag.id)}catch(e){}}
+ drag=null;pieces=[];completed=0;started=false;imageLoaded=false;shownHint=false;
+ $('hint').classList.remove('active');$('missing').style.display='none';
+ updateCounter();
+}
+function openFamilies(){
+ cancelCurrentRound();selectedFamily=null;
+ $('levels').style.display='none';$('families').style.display='flex';draw();
+}
+function chooseFamily(key){
+ if(!FAMILIES[key])return;
+ cancelCurrentRound();selectedFamily=key;
+ $('families').style.display='none';$('levels').style.display='flex';draw();
+}
+function openLevels(){
+ if(!selectedFamily){openFamilies();return;}
+ cancelCurrentRound();$('families').style.display='none';$('levels').style.display='flex';draw();
+}
+$('start').onclick=openFamilies;$('levelsBtn').onclick=openLevels;
+document.querySelectorAll('[data-family]').forEach(b=>b.onclick=()=>chooseFamily(b.dataset.family));
 document.querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>selectLevel(b.dataset.level));
 $('hint').onclick=()=>{shownHint=!shownHint;$('hint').classList.toggle('active',shownHint);draw()};
-$('reset').onclick=shuffle;$('again').onclick=shuffle;$('finishLevels').onclick=openLevels;
+$('reset').onclick=shuffle;
 window.addEventListener('resize',setup);initEdges();setup();
 </script></body></html>
