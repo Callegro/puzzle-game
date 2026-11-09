@@ -42,12 +42,15 @@ header strong{color:#8052b3;text-shadow:1px 2px #fff}header small{color:#8263a0}
 .level-options button{border:3px solid #fff;box-shadow:0 6px 0 #0002;text-shadow:0 1px #0002}
 .level-options button:nth-child(1){background:#f989a5}.level-options button:nth-child(2){background:#52bcb2}.level-options button:nth-child(3){background:#9c88e9}
 #rotate{background:#ffe8c3;color:#8354a0}
+#familyBackBtn{display:block;margin:24px auto 0;padding:13px 26px;border:3px solid #fff;border-radius:30px;background:#ffbd59;color:#553d45;font-size:19px;font-weight:850;box-shadow:0 5px 0 #d98b36;touch-action:manipulation;cursor:pointer}
+#familyBackBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #d98b36}
+#familyBackBtn:focus-visible{outline:3px solid #714ec9;outline-offset:3px}
 </style></head><body>
 <div id="rotate">📱 아이패드를 가로로 돌려주세요.</div>
 <div id="app"><header><div><strong>🧩 우리반 가족 퍼즐 맞추기</strong></div><div class="actions"><span id="counter">0 / 9</span><button id="hint" class="pill">👁 사진 힌트</button><button id="reset" class="pill">↻ 다시 섞기</button><button id="levelsBtn" class="pill">난이도</button></div></header><div id="missing" role="alert"></div><canvas id="game" aria-label="직소 퍼즐 게임"></canvas></div>
 <div id="intro"><div class="panel"><h1>🧩 우리반 가족 퍼즐 맞추기</h1><p>우리 반 친구들의 가족을 만나요!<br>가족과 난이도를 골라 퍼즐을 맞춰보세요.</p><div id="loadStatus" aria-live="polite">사진과 소리를 준비하고 있어요…</div><button id="start" disabled>준비 중…</button></div></div>
 <div id="families"><div class="panel"><h1>가족을 선택해요</h1><div class="family-options"><button type="button" data-family="narin" aria-label="나린이네 가족 선택"><svg viewBox="0 0 180 160" aria-hidden="true" focusable="false"><path d="M12 73 L90 12 L168 73 L156 88 L149 82 L149 148 Q149 154 143 154 H37 Q31 154 31 148 V82 L24 88 Z" fill="#7AAB88" stroke="#496D53" stroke-width="5" stroke-linejoin="round"/><path d="M12 73 L90 12 L168 73" fill="none" stroke="#496D53" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M39 86 H141 V139 H39Z" fill="#ffffff" fill-opacity=".11" rx="7"/><text class="house-name" x="90" y="119" text-anchor="middle">나린이네</text></svg></button><button type="button" data-family="seungeun" aria-label="승은이네 가족 선택"><svg viewBox="0 0 180 160" aria-hidden="true" focusable="false"><path d="M12 73 L90 12 L168 73 L156 88 L149 82 L149 148 Q149 154 143 154 H37 Q31 154 31 148 V82 L24 88 Z" fill="#D69C76" stroke="#996647" stroke-width="5" stroke-linejoin="round"/><path d="M12 73 L90 12 L168 73" fill="none" stroke="#996647" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M39 86 H141 V139 H39Z" fill="#ffffff" fill-opacity=".11" rx="7"/><text class="house-name" x="90" y="119" text-anchor="middle">승은이네</text></svg></button><button type="button" data-family="yunji" aria-label="윤지네 가족 선택"><svg viewBox="0 0 180 160" aria-hidden="true" focusable="false"><path d="M12 73 L90 12 L168 73 L156 88 L149 82 L149 148 Q149 154 143 154 H37 Q31 154 31 148 V82 L24 88 Z" fill="#9A9BCB" stroke="#676C9E" stroke-width="5" stroke-linejoin="round"/><path d="M12 73 L90 12 L168 73" fill="none" stroke="#676C9E" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M39 86 H141 V139 H39Z" fill="#ffffff" fill-opacity=".11" rx="7"/><text class="house-name" x="90" y="119" text-anchor="middle">윤지네</text></svg></button></div></div></div>
-<div id="levels"><div class="panel"><h1>난이도 선택</h1><div class="level-options"><button data-level="easy">쉬워요<span>왕 큰 조각 모험</span></button><button data-level="normal">재밌어요<span>조금더 조각조각</span></button><button data-level="hard">어려워요<span>도전! 퍼즐 박사</span></button></div></div></div>
+<div id="levels"><div class="panel"><h1>난이도 선택</h1><div class="level-options"><button data-level="easy">쉬워요<span>왕 큰 조각 모험</span></button><button data-level="normal">재밌어요<span>조금더 조각조각</span></button><button data-level="hard">어려워요<span>도전! 퍼즐 박사</span></button></div><button id="familyBackBtn" type="button">🏠 다른 가족 고를래요</button></div></div>
 
 <script>
 'use strict';
@@ -434,6 +437,7 @@ function openLevels(){
  cancelCurrentRound();$('families').style.display='none';$('levels').style.display='flex';draw();
 }
 $('start').onclick=()=>{if(!assetImagesReady)return;startBackgroundMusic();openFamilies()};$('levelsBtn').onclick=openLevels;
+$('familyBackBtn').onclick=openFamilies;
 document.querySelectorAll('[data-family]').forEach(b=>b.onclick=()=>chooseFamily(b.dataset.family));
 document.querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>selectLevel(b.dataset.level));
 $('hint').onclick=()=>{shownHint=!shownHint;$('hint').classList.toggle('active',shownHint);draw()};
