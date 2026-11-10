@@ -60,6 +60,24 @@ let selectedFamily=null;
 // 시작 화면에서 모든 사진을 병렬 로딩. 사진 준비 전에는 게임 진입을 막는다.
 const imageCache={};
 const audioCache={};
+// 짧은 효과음은 독립적인 오디오 객체로 재생: BGM/음성과 동시에 들림.
+// 빠르게 연속 조작할 때도 이전 효과음이 끊기지 않도록 소규모 풀 사용.
+const effectFiles={snap:'assets/click.mp3',button:'assets/button.mp3'};
+const effectPool={snap:[],button:[]};
+const effectIndex={snap:0,button:0};
+function playEffect(kind){
+ const pool=effectPool[kind];
+ if(!pool||!pool.length)return;
+ const a=pool[effectIndex[kind]++ % pool.length];
+ try{a.pause();a.currentTime=0;}catch(e){}
+ const result=a.play();
+ if(result&&result.catch)result.catch(()=>{});
+}
+// 실제 HTML 버튼들은 클릭 이벤트 하나로 처리하므로 기존 동작과 충돌하지 않음.
+document.addEventListener('click',e=>{
+ const btn=e.target.closest('button');
+ if(btn&&!btn.disabled)playEffect('button');
+},true);
 const backgroundMusic=new Audio('assets/background.mp3');
 backgroundMusic.loop=true;backgroundMusic.preload='auto';backgroundMusic.volume=.22;
 let musicActivated=false;
@@ -76,6 +94,14 @@ function preloadAssets(){
    const a=new Audio(FAMILIES[key].sound);
    a.preload='auto';a.volume=1;audioCache[key]=a;
    try{a.load()}catch(e){}
+ }
+ for(const kind of Object.keys(effectFiles)){
+  for(let i=0;i<3;i++){
+   const a=new Audio(effectFiles[kind]);
+   a.preload='auto';a.volume=kind==='snap'?.85:.72;
+   effectPool[kind].push(a);
+   try{a.load()}catch(e){}
+  }
  }
  try{backgroundMusic.load()}catch(e){}
  Promise.allSettled(promises).then(results=>{
@@ -357,8 +383,8 @@ canvas.addEventListener('pointerdown',e=>{
  if(!started||!imageLoaded)return;
  const q=coords(e);
  if(finished){
-  if(isInside(q,restartButton))shuffle();
-  else if(isInside(q,chooseButton))openFamilies();
+  if(isInside(q,restartButton)){playEffect('button');shuffle();}
+  else if(isInside(q,chooseButton)){playEffect('button');openFamilies();}
   e.preventDefault();return;
  }
  for(let k=pieces.length-1;k>=0;k--){
@@ -383,7 +409,8 @@ function release(e){
  const {p}=drag,tx=board.x+p.c*pw,ty=board.y+p.r*ph;
  // 올바른 위치에서만 고정하고, 그 외에는 현재 위치에 축소해서 둔다.
  if(e.type!=='pointercancel'&&Math.hypot(p.x-tx,p.y-ty)<Math.min(65,pw*.5)){
-  p.x=tx;p.y=ty;p.scale=1;p.locked=true;completed++;updateCounter();
+   p.x=tx;p.y=ty;p.scale=1;p.locked=true;completed++;updateCounter();
+  playEffect('snap');
   if(completed===rows*cols)celebrate();
  }else{
   const mx=p.x+pw/2,my=p.y+ph/2;
